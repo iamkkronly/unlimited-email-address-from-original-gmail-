@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gmail Dot + Plus Variants Generator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    textarea { width: 100%; height: 300px; margin-top: 10px; }
+    button { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h2>Gmail Dot + Plus Variants Generator</h2>
+  <p>Enter your Gmail address (without @gmail.com):</p>
+  <input type="text" id="base" placeholder="yourusername" />
+  <p>How many +labels you want to add for each dot variant?</p>
+  <input type="number" id="labelCount" value="10" min="1" max="100000" />
+  <button onclick="generate()">Generate Variants</button>
+  <p><strong>Note:</strong> All these emails go to the same Gmail inbox.</p>
+  <textarea id="output" readonly></textarea>
+
+  <script>
+    function insertDots(name) {
+      let results = new Set();
+      let queue = [''];
+
+      for (let i = 0; i < name.length - 1; i++) {
+        let char = name[i];
+        let newQueue = [];
+
+        queue.forEach(prefix => {
+          newQueue.push(prefix + char);
+          newQueue.push(prefix + char + '.');
+        });
+
+        queue = newQueue;
+      }
+
+      queue.forEach(prefix => {
+        let variant = (prefix + name[name.length - 1]).replace(/\.+$/, '');
+        results.add(variant);
+      });
+
+      return [...results];
+    }
+
+    function generate() {
+      const base = document.getElementById("base").value.toLowerCase().replace(/\./g, '');
+      const labelCount = parseInt(document.getElementById("labelCount").value);
+      if (!base || isNaN(labelCount)) return alert("Enter valid base name and label count");
+
+      const dotVariants = insertDots(base);
+      const allEmails = new Set();
+
+      let labelPrefixes = ['test', 'mail', 'user', 'promo', 'id', 'abc', 'bot', 'data', 'x', 'info'];
+
+      for (let i = 0; i < dotVariants.length; i++) {
+        const dot = dotVariants[i];
+        for (let j = 0; j < labelCount; j++) {
+          let label = labelPrefixes[j % labelPrefixes.length] + j;
+          allEmails.add(`${dot}+${label}@gmail.com`);
+          if (allEmails.size >= 20000000) break;
+        }
+        if (allEmails.size >= 20000000) break;
+      }
+
+      document.getElementById("output").value = [...allEmails].join('\n');
+    }
+  </script>
+</body>
+</html>
